@@ -227,6 +227,25 @@ in
       eval "$(zoxide init zsh)"
       source ${pkgs.fzf}/share/fzf/key-bindings.zsh
       source ${pkgs.fzf}/share/fzf/completion.zsh
+
+      # Python install cheat sheet
+      # Prevents the "externally managed environment" (PEP 668) dead-end.
+      py-help() {
+        cat <<'EOF'
+Python workflow on this machine (PEP 668 blocks global pip install):
+
+  CLI tools:     pipx install <tool>        # e.g. pipx install poetry
+                 uv tool install <tool>     # alternative, faster
+
+  Project env:   uv venv
+                 source .venv/bin/activate
+                 uv pip install <pkg>
+
+  Notes:         avoid global 'pip install' against system python
+                 use 'nix-rebuild' after changing Nix modules
+                 run 'nix-doctor' for diagnostics
+EOF
+      }
     '';
   };
 

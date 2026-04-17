@@ -100,12 +100,21 @@
   };
 
   # Shell aliases for Rust CLI tools
+  # Note: NIX_CONFIG_DIR is expanded at runtime so non-default clone paths
+  # (see install.sh NIX_CONFIG_DIR override) keep working without a rebuild.
   home.shellAliases = {
     # Eza aliases
     ll = "eza -lah";
 
     # Vim aliases
     vim = "nvim";
+
+    # Nix config ergonomics
+    edit-shell  = "\${NIX_CONFIG_DIR:-$HOME/.nix-config}/scripts/edit-shell.sh";
+    edit-config = "\${EDITOR:-nvim} \${NIX_CONFIG_DIR:-$HOME/.nix-config}/flake.nix";
+    nix-rebuild = "\${NIX_CONFIG_DIR:-$HOME/.nix-config}/update.sh --local";
+    nix-update  = "\${NIX_CONFIG_DIR:-$HOME/.nix-config}/update.sh --deps";
+    nix-doctor  = "\${NIX_CONFIG_DIR:-$HOME/.nix-config}/scripts/doctor.sh";
   };
 
   # FZF

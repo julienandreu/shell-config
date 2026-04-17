@@ -13,9 +13,16 @@
     cargo
     rust-analyzer
 
-    # Python
-    python3
+    # Python runtime plus supported install workflows.
+    # PEP 668 blocks global `pip install` against system python; the
+    # supported paths on this system are:
+    #   CLI tools:   pipx install <tool>  /  uv tool install <tool>
+    #   Project env: uv venv && uv pip install <pkg>
+    # Run `py-help` for a cheat sheet, `nix-doctor` to verify state.
+    (python3.withPackages (ps: [ ps.pip ]))
     ruff
+    pipx
+    uv
   ];
 
   # Rust environment
