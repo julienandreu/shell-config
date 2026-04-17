@@ -77,7 +77,7 @@ cd ~/.nix-config
 nix-config/
 ├── flake.nix              # Main Nix flake entry point
 ├── home.nix               # Home Manager configuration
-├── local.nix              # Machine-specific config (generated, git-tracked)
+├── local.nix              # Machine-specific config (generated locally, gitignored)
 │
 ├── install.sh             # Bootstrap installer
 ├── setup.sh               # Full interactive setup (Git, SSH, system build)
@@ -106,9 +106,13 @@ nix-config/
 
 ## 🔄 Daily Usage
 
+> **Recipe index**: see [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the short
+> list of common situations → commands. The most-used aliases after install:
+> `edit-shell`, `nix-rebuild`, `nix-update`, `nix-doctor`, `py-help`.
+
 ### Updating Your Configuration
 
-Pull latest changes and rebuild:
+Pull latest changes, refresh dependencies, and rebuild:
 
 ```bash
 cd ~/.nix-config
@@ -116,9 +120,20 @@ cd ~/.nix-config
 ```
 
 This will:
-- Pull from Git repository
+- Pull from Git repository (fails fast on divergence)
 - Update flake.lock (Nix dependencies)
 - Rebuild and activate your configuration
+
+Other modes:
+
+```bash
+./update.sh --local    # rebuild only (no git, no Homebrew) — for local edits
+./update.sh --deps     # flake update + rebuild (no git pull)
+./update.sh --check    # darwin-rebuild build, no switch (no sudo)
+./update.sh --help     # show all modes
+
+./scripts/doctor.sh    # non-destructive diagnostics
+```
 
 ### Adding New Software
 
