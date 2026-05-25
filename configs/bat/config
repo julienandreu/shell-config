@@ -1,0 +1,5 @@
+# bat config - https://github.com/sharkdp/bat#configuration-file
+
+--theme="Catppuccin Mocha"
+--style="numbers,changes,header"
+--pager="less -FR"

@@ -1,0 +1,33 @@
+{
+  "global": {
+    "check_for_updates_on_startup": true,
+    "show_in_menu_bar": true,
+    "show_profile_name_in_menu_bar": false
+  },
+  "profiles": [
+    {
+      "name": "Default profile",
+      "selected": true,
+      "devices": [
+        {
+          "identifiers": {
+            "vendor_id": 12951,
+            "product_id": 50895,
+            "is_keyboard": true,
+            "is_pointing_device": false
+          },
+          "modify_events": true,
+          "disable_built_in_keyboard_if_exists": true,
+          "manipulate_caps_lock_led": true,
+          "ignore_vendor_events": false
+        }
+      ],
+      "fn_function_keys": [],
+      "simple_modifications": [],
+      "virtual_hid_keyboard": {
+        "country_code": 0,
+        "keyboard_type_v2": "ansi"
+      }
+    }
+  ]
+}

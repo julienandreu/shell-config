@@ -1,0 +1,9 @@
+# Ghostty terminal config.
+# Rendered from config.in: __CATPPUCCIN_FLAVOR_TITLE__ -> "Mocha" etc.
+# Ghostty theme names use Title Case (e.g., "Catppuccin Mocha").
+
+theme = Catppuccin __CATPPUCCIN_FLAVOR_TITLE__
+font-family = MesloLGS Nerd Font Mono
+font-size = 12
+shell-integration = zsh
+macos-option-as-alt = true
