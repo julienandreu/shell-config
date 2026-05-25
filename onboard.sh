@@ -6,7 +6,7 @@ set -euo pipefail
 # Onboarding Script - Post-Installation Application Setup
 # =============================================================================
 # This script guides users through setting up installed applications after
-# the initial Nix configuration is applied via setup.sh.
+# the initial dotfiles configuration is applied via setup.sh.
 #
 # Note: Git, SSH keys, and basic system configuration are handled by setup.sh
 # =============================================================================
@@ -363,7 +363,7 @@ setup_cursor() {
     log_step "2. Configure your AI model preferences"
     log_step "3. Install any additional extensions you need"
     echo ""
-    log_info "Note: Nix config provides default settings and extensions."
+    log_info "Note: dotfiles repo provides default settings and extensions."
     log_info "Your custom settings are merged automatically."
 
     wait_for_completion
@@ -591,25 +591,15 @@ setup_ai_assistants() {
                 echo ""
 
                 if [[ -n "$api_key" ]]; then
-                    # Add to secrets.nix if it exists
-                    local secrets_file="$HOME/.config/nix-config/local/secrets.nix"
-                    if [[ -f "$secrets_file" ]]; then
-                        # Check if ANTHROPIC_API_KEY already exists
-                        if grep -q "ANTHROPIC_API_KEY" "$secrets_file"; then
-                            log_info "ANTHROPIC_API_KEY already in secrets.nix - update it manually if needed"
-                        else
-                            echo "" >> "$secrets_file"
-                            echo "  # Anthropic API Key for Claude Code" >> "$secrets_file"
-                            echo "  home.sessionVariables.ANTHROPIC_API_KEY = \"$api_key\";" >> "$secrets_file"
-                            log_success "Added ANTHROPIC_API_KEY to secrets.nix"
-                        fi
+                    local secrets_file="$HOME/.config/dotfiles/secrets.env"
+                    mkdir -p "$(dirname "$secrets_file")"
+                    touch "$secrets_file"
+                    chmod 600 "$secrets_file"
+                    if grep -q "^export ANTHROPIC_API_KEY=" "$secrets_file"; then
+                        log_info "ANTHROPIC_API_KEY already in $secrets_file - update it manually if needed"
                     else
-                        # Add to .zshrc as fallback
-                        if ! grep -q "ANTHROPIC_API_KEY" "$HOME/.zshrc" 2>/dev/null; then
-                            echo "" >> "$HOME/.zshrc"
-                            echo "export ANTHROPIC_API_KEY=\"$api_key\"" >> "$HOME/.zshrc"
-                            log_success "Added ANTHROPIC_API_KEY to .zshrc"
-                        fi
+                        printf '\n# Anthropic API Key for Claude Code\nexport ANTHROPIC_API_KEY="%s"\n' "$api_key" >> "$secrets_file"
+                        log_success "Added ANTHROPIC_API_KEY to $secrets_file"
                     fi
                     export ANTHROPIC_API_KEY="$api_key"
                 fi
@@ -621,7 +611,7 @@ setup_ai_assistants() {
             log_success "ANTHROPIC_API_KEY is already set"
         fi
     else
-        log_warning "Claude Code not installed. Check that it's in modules/software.nix"
+        log_warning "Claude Code not installed. Run setup.sh or 'curl -fsSL https://claude.ai/install.sh | bash'."
     fi
 
     echo ""
@@ -642,25 +632,15 @@ setup_ai_assistants() {
                 echo ""
 
                 if [[ -n "$api_key" ]]; then
-                    # Add to secrets.nix if it exists
-                    local secrets_file="$HOME/.config/nix-config/local/secrets.nix"
-                    if [[ -f "$secrets_file" ]]; then
-                        # Check if OPENAI_API_KEY already exists
-                        if grep -q "OPENAI_API_KEY" "$secrets_file"; then
-                            log_info "OPENAI_API_KEY already in secrets.nix - update it manually if needed"
-                        else
-                            echo "" >> "$secrets_file"
-                            echo "  # OpenAI API Key for Codex" >> "$secrets_file"
-                            echo "  home.sessionVariables.OPENAI_API_KEY = \"$api_key\";" >> "$secrets_file"
-                            log_success "Added OPENAI_API_KEY to secrets.nix"
-                        fi
+                    local secrets_file="$HOME/.config/dotfiles/secrets.env"
+                    mkdir -p "$(dirname "$secrets_file")"
+                    touch "$secrets_file"
+                    chmod 600 "$secrets_file"
+                    if grep -q "^export OPENAI_API_KEY=" "$secrets_file"; then
+                        log_info "OPENAI_API_KEY already in $secrets_file - update it manually if needed"
                     else
-                        # Add to .zshrc as fallback
-                        if ! grep -q "OPENAI_API_KEY" "$HOME/.zshrc" 2>/dev/null; then
-                            echo "" >> "$HOME/.zshrc"
-                            echo "export OPENAI_API_KEY=\"$api_key\"" >> "$HOME/.zshrc"
-                            log_success "Added OPENAI_API_KEY to .zshrc"
-                        fi
+                        printf '\n# OpenAI API Key for Codex\nexport OPENAI_API_KEY="%s"\n' "$api_key" >> "$secrets_file"
+                        log_success "Added OPENAI_API_KEY to $secrets_file"
                     fi
                     export OPENAI_API_KEY="$api_key"
                 fi
@@ -672,7 +652,7 @@ setup_ai_assistants() {
             log_success "OPENAI_API_KEY is already set"
         fi
     else
-        log_warning "Codex not installed. Check that it's in modules/software.nix"
+        log_warning "Codex not installed. Run 'npm install -g @openai/codex' (Node required)."
     fi
 
     echo ""
@@ -713,8 +693,8 @@ show_completion() {
     echo ""
 
     log_info "Useful commands:"
-    log_step "• ./update.sh - Update your Nix configuration"
-    log_step "• darwin-rebuild switch --flake .#mac - Rebuild system manually"
+    log_step "• update - Sync repo and refresh Brewfile"
+    log_step "• rebuild - Apply local edits (brew + symlinks + macOS defaults)"
     log_step "• brew upgrade - Update Homebrew packages"
     echo ""
 

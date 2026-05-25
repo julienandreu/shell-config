@@ -108,7 +108,7 @@ stage_symlinks() {
 
 stage_cursor_merge() {
     log_section "Cursor settings merge"
-    local script="$DOTFILES_DIR/scripts/merge-cursor-settings.sh"
+    local script="$DOTFILES_DIR/bin/merge-cursor-settings.sh"
     if [[ -x "$script" ]]; then
         "$script" || log_warning "Cursor merge script reported an error (non-fatal)."
     else

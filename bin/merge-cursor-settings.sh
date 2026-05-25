@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Merge Cursor settings: Nix defaults + user overrides = final settings.json
-# This script intelligently merges Nix-managed defaults with user-editable settings
+# Merge Cursor settings: dotfiles defaults + user overrides = final settings.json
+# This script intelligently merges dotfiles defaults with user-editable settings
 
 set -euo pipefail
 
@@ -12,20 +12,20 @@ BACKUP_FILE="${CURSOR_USER_DIR}/settings.json.backup"
 # Ensure Cursor User directory exists
 mkdir -p "${CURSOR_USER_DIR}"
 
-# Check if defaults file exists (managed by Nix)
+# Check if defaults file exists (rendered+symlinked by bin/rebuild.sh)
 if [[ ! -f "${DEFAULTS_FILE}" ]]; then
     echo "Warning: Defaults file not found at ${DEFAULTS_FILE}"
-    echo "This is normal on first run. Settings will be created when Nix config is applied."
+    echo "This is normal on first run. Settings will be created when 'rebuild' is run."
     exit 0
 fi
 
-# Read defaults (from Nix)
+# Read defaults (from dotfiles repo)
 DEFAULTS_JSON=$(cat "${DEFAULTS_FILE}")
 
 # If settings.json doesn't exist, just copy defaults
 if [[ ! -f "${SETTINGS_FILE}" ]]; then
     echo "${DEFAULTS_JSON}" > "${SETTINGS_FILE}"
-    echo "Created ${SETTINGS_FILE} from Nix defaults"
+    echo "Created ${SETTINGS_FILE} from dotfiles defaults"
     exit 0
 fi
 
@@ -47,7 +47,7 @@ if [[ "${CURRENT_HASH}" != "${MERGED_HASH}" ]]; then
     # Write merged settings
     echo "${MERGED_JSON}" | jq . > "${SETTINGS_FILE}"
 
-    echo "Merged Nix defaults with user settings in ${SETTINGS_FILE}"
+    echo "Merged dotfiles defaults with user settings in ${SETTINGS_FILE}"
     echo "Backup saved to ${BACKUP_FILE}"
 else
     echo "Settings already up to date (no new defaults to merge)"

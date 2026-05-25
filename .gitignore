@@ -1,22 +1,11 @@
 # .gitignore
 
-# Nix build results
-result
-result-*
-.drv
-
 # Secrets
 secrets/*.env
 !secrets/template.env
-!secrets/template.nix
 .env
 .envrc
 .company-secrets
-
-# Local user overrides (gitignored)
-local/
-!local/.gitkeep
-local.nix
 
 # macOS
 .DS_Store
@@ -28,10 +17,10 @@ local.nix
 *.swo
 *~
 
-# User-specific files (these should be templated)
-modules/software.nix.bak
+# Temporary files
 *.tmp
+*.bak
 
-# Flake lock (optional - you may want to commit this)
-# flake.lock
-
+# Claude / agent state (per-project caches)
+.claude/
+skills/

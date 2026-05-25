@@ -1,299 +1,176 @@
-# Personal Nix Configuration
+# Personal Dotfiles (macOS)
 
-A reproducible macOS development environment using Nix, nix-darwin, and Home Manager. Set up your entire development workstation in minutes with a single command.
+Bare-shell macOS dotfiles. Homebrew for everything, `fnm` for Node,
+`uv` + `pipx` for Python, Catppuccin theming, idempotent installer.
 
-## 🎯 What This Provides
+> **Status note:** the repo is named `nix-config` for legacy reasons.
+> There is no Nix anywhere in the current setup. If you have an old Nix
+> install on this machine, see `bin/uninstall-nix.sh` (optional, never
+> auto-run).
 
-### System Configuration (via nix-darwin)
-- **macOS Settings**: Dock, keyboard, firewall, default browser
-- **Applications**: Homebrew casks automatically installed
+## What it does
 
-### Development Environment (via Home Manager)
-- **Terminal & Shell**: Ghostty terminal, Zsh with Starship prompt
-- **Development Tools**: Git, Docker, GitHub CLI, AWS CLI, Terraform
-- **Programming Languages**: Node.js (via fnm), Rust, Python
-- **Modern CLI Tools**: Neovim, ripgrep, fd, bat, fzf, zoxide, and more
-- **GUI Applications**: Cursor, Chrome, Docker Desktop, Slack, Linear, 1Password
-- **Keyboard**: Karabiner Elements for custom keyboard mappings
-- **Theme**: Catppuccin Mocha across all tools
+- Installs Homebrew (if missing) and applies a single `Brewfile` of
+  formulae, casks, and taps.
+- Symlinks repo-managed configs into `$HOME` (`~/.zshrc`, `~/.gitconfig`,
+  `~/.ssh/config`, `~/.config/{starship.toml,ghostty/config,gh,bat,bottom,karabiner,nvim}`,
+  Cursor `settings.json.defaults`).
+- Renders Catppuccin flavor (`latte`/`frappe`/`macchiato`/`mocha`) into
+  starship, ghostty, and Cursor configs at install time.
+- Applies macOS preferences declaratively (Dock, Keyboard, Globe key,
+  Default browser, Firewall) via `bin/macos-defaults.sh`.
+- Sets a "More Space" display resolution per Mac model.
+- Wires `fnm` (Node) and `uv`/`pipx` (Python) into the shell.
 
-## 📋 Prerequisites
-
-- macOS (Apple Silicon or Intel)
-- Admin access to your machine
-- Internet connection
-
-## 🚀 Installation
-
-### One-Line Install (Recommended)
-
-Run this command on a fresh Mac:
+## Quick start (blank macOS)
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/nix-config/main/install.sh)"
 ```
 
-This will:
-1. Install Xcode Command Line Tools (if needed)
-2. Clone repository to `~/.nix-config`
-3. Install Nix package manager
-4. Install Homebrew
-5. Build and activate your system configuration
-6. Guide you through personal setup (Git config, SSH keys, etc.)
+That clones to `~/.dotfiles` (override with `DOTFILES_DIR=...`) and runs
+`setup.sh`, which:
 
-### Post-Installation: Application Setup
+1. Installs Homebrew if missing.
+2. Prompts for a Catppuccin flavor.
+3. Writes `~/.config/dotfiles/config.sh`.
+4. Runs `bin/rebuild.sh` (`brew bundle` + symlinks + macOS defaults).
+5. Configures git identity + SSH key for GitHub.
+6. Optionally authenticates `gh`, installs Node LTS via `fnm`, installs
+   Claude Code (`curl -fsSL https://claude.ai/install.sh | bash`) and
+   OpenAI Codex (`npm i -g @openai/codex`).
+7. Optionally runs `onboard.sh` (1Password, Cursor extensions, etc.).
 
-After installation completes, run the onboarding wizard:
+## Daily use
 
-```bash
-cd ~/.nix-config
-./onboard.sh
-```
+| Situation                            | Command          |
+|--------------------------------------|------------------|
+| Edit shell init                      | `edit-shell`     |
+| Edit any repo file                   | `edit-config`    |
+| Apply local edits                    | `rebuild`        |
+| Refresh brew + git pull              | `update`         |
+| Brew upgrade only                    | `update --deps`  |
+| Drift check (no changes)             | `update --check` |
+| Diagnose                             | `doctor`         |
+| Python install cheat sheet           | `py-help`        |
 
-This guides you through setting up:
-- Chrome (default browser & sign-in)
-- GitHub CLI (gh authentication)
-- 1Password (password manager)
-- AWS (console & CLI)
-- Cursor (AI code editor)
-- Docker Desktop (container platform)
-- Linear (project management)
-- Slack (team communication)
-- AI Assistants (Claude Code & Codex)
+See [`docs/WORKFLOWS.md`](docs/WORKFLOWS.md) for recipe-style guidance.
 
-### Manual Installation
-
-If you prefer to clone first:
-
-```bash
-git clone https://github.com/julienandreu/nix-config.git ~/.nix-config
-cd ~/.nix-config
-./setup.sh
-```
-
-## 📁 Project Structure
+## Layout
 
 ```
-nix-config/
-├── flake.nix              # Main Nix flake entry point
-├── home.nix               # Home Manager configuration
-├── local.nix              # Machine-specific config (generated locally, gitignored)
-│
-├── install.sh             # Bootstrap installer
-├── setup.sh               # Full interactive setup (Git, SSH, system build)
-├── update.sh              # Update packages and rebuild
-├── onboard.sh             # Application setup wizard
-│
-├── machines/
-│   └── default.nix        # macOS system settings & Homebrew
-│
-├── modules/
-│   ├── software.nix       # Dev tools (Git, Docker, AWS CLI, etc.)
-│   ├── languages.nix      # Programming languages
-│   ├── tools.nix          # CLI utilities & Neovim
-│   └── theme.nix          # Shell theme & terminal config
-│
+.
+├── Brewfile                 # taps + formulae + casks
+├── install.sh               # curl-pipeable bootstrap
+├── setup.sh                 # first-run interactive flow
+├── onboard.sh               # app login wizard (1Password, gh, Cursor...)
+├── bin/
+│   ├── rebuild.sh           # brew bundle + render + symlink + defaults
+│   ├── update.sh            # git pull + brew upgrade + rebuild (4 modes)
+│   ├── doctor.sh            # non-destructive diagnostics (+ --fix)
+│   ├── edit-shell.sh        # open configs/zsh/init.zsh, prompt rebuild
+│   ├── edit-config.sh       # open the repo in $EDITOR
+│   ├── macos-defaults.sh    # `defaults write` + firewall + dockutil
+│   ├── set-display.sh       # displayplacer per Mac model
+│   ├── merge-cursor-settings.sh  # deep-merge defaults into Cursor settings.json
+│   ├── uninstall-nix.sh     # optional, destructive, prompts YES
+│   └── lib/                 # log / platform / config / symlink helpers
 ├── configs/
-│   └── nvim/              # Complete Neovim configuration
-│
-├── scripts/
-│   └── merge-cursor-settings.sh  # Cursor settings merge script
-│
-└── secrets/
-    ├── template.env       # Template for environment secrets
-    └── template.nix       # Template for Nix secrets
+│   ├── zsh/{zshrc,init.zsh,aliases.zsh,functions.zsh,completion.zsh,plugins.zsh}
+│   ├── starship/starship.toml.in     # Catppuccin palettes (all 4)
+│   ├── ghostty/config.in             # templated flavor title
+│   ├── git/config                    # delta pager + include ~/.config/dotfiles/git.local
+│   ├── ssh/config                    # control-master + github/gitlab blocks
+│   ├── gh/config.yml
+│   ├── bat/config
+│   ├── bottom/bottom.toml            # Catppuccin Mocha
+│   ├── karabiner/karabiner.json      # Planck EZ profile
+│   ├── cursor/settings.json.defaults.in
+│   └── nvim/                         # standalone Neovim config
+├── secrets/template.env              # env-style example (gitignored siblings)
+├── docs/WORKFLOWS.md
+└── README.md
 ```
 
-## 🔄 Daily Usage
+## Machine-specific configuration
 
-> **Recipe index**: see [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the short
-> list of common situations → commands. The most-used aliases after install:
-> `edit-shell`, `nix-rebuild`, `nix-update`, `nix-doctor`, `py-help`.
+`setup.sh` writes `~/.config/dotfiles/config.sh`:
 
-### Updating Your Configuration
+```sh
+USERNAME="alice"
+HOME_DIRECTORY="/Users/alice"
+CATPPUCCIN_FLAVOR="mocha"   # latte|frappe|macchiato|mocha
+ALLOW_GLOBAL_PIP="0"        # 1 to enable `doctor --fix` PEP-668 bypass
+```
 
-Pull latest changes, refresh dependencies, and rebuild:
+Personal git identity goes in `~/.config/dotfiles/git.local`
+(included from the repo-managed `~/.gitconfig`):
+
+```ini
+[user]
+    name = Alice Example
+    email = alice@example.com
+```
+
+API keys go in `~/.config/dotfiles/secrets.env` (sourced by zsh init):
+
+```sh
+export ANTHROPIC_API_KEY="..."
+export OPENAI_API_KEY="..."
+```
+
+All three files live outside the repo and are not tracked.
+
+## Python (PEP 668)
+
+Homebrew's Python ships an `EXTERNALLY-MANAGED` marker that blocks
+`pip install` against the global interpreter. The supported workflows
+on this machine:
 
 ```bash
-cd ~/.nix-config
-./update.sh
+pipx install <tool>          # isolated venv per CLI tool
+uv tool install <tool>       # same idea, faster
+uv venv && uv pip install …  # per-project virtualenv
 ```
 
-This will:
-- Pull from Git repository (fails fast on divergence)
-- Update flake.lock (Nix dependencies)
-- Rebuild and activate your configuration
+Run `py-help` for a cheat sheet, or `doctor` to verify state. If you
+really want global pip, set `ALLOW_GLOBAL_PIP=1` in `config.sh` and
+run `doctor --fix`.
 
-Other modes:
+## Catppuccin flavor
+
+The flavor is chosen interactively during `setup.sh` and stored in
+`config.sh`. To change it later:
 
 ```bash
-./update.sh --local    # rebuild only (no git, no Homebrew) — for local edits
-./update.sh --deps     # flake update + rebuild (no git pull)
-./update.sh --check    # darwin-rebuild build, no switch (no sudo)
-./update.sh --help     # show all modes
-
-./scripts/doctor.sh    # non-destructive diagnostics
+$EDITOR ~/.config/dotfiles/config.sh     # change CATPPUCCIN_FLAVOR=...
+rebuild                                  # re-render templates
 ```
 
-### Adding New Software
+Starship and Ghostty pick up the new flavor immediately. Bat, bottom,
+delta, and zsh-syntax-highlighting are vendored as Catppuccin Mocha
+only - non-mocha flavors will look slightly off for those tools.
 
-1. Edit the appropriate module in `modules/`:
-   - `software.nix` - Development tools (Git, Docker, etc.)
-   - `languages.nix` - Programming languages
-   - `tools.nix` - CLI utilities
-   - `theme.nix` - Shell and terminal configuration
+## Removing the old Nix install
 
-2. For GUI apps, edit `machines/default.nix` (Homebrew casks section)
-
-3. Rebuild:
-   ```bash
-   darwin-rebuild switch --flake ~/.nix-config#mac --impure
-   ```
-
-### Customizing Personal Settings
-
-Personal settings (Git name/email, SSH keys, etc.) are stored in:
-```
-~/.config/nix-config/local/secrets.nix
-```
-
-This file is gitignored and created during `setup.sh`.
-
-## 🛠️ Troubleshooting
-
-### Command not found after installation
-
-Start a new terminal session:
-```bash
-exec zsh
-```
-
-Or close and reopen your terminal.
-
-### Nix build fails
-
-Clean the Nix store and rebuild:
-```bash
-nix-collect-garbage -d
-darwin-rebuild switch --flake ~/.nix-config#mac --impure
-```
-
-### Homebrew apps not installed
-
-Homebrew casks install asynchronously. Check status:
-```bash
-brew list --cask
-```
-
-If an app is missing, install manually:
-```bash
-brew install --cask <app-name>
-```
-
-### Git configuration not applied
-
-Ensure secrets file exists:
-```bash
-cat ~/.config/nix-config/local/secrets.nix
-```
-
-If missing, run `./setup.sh` to recreate it.
-
-### SSH key not working
-
-Test GitHub connection:
-```bash
-ssh -T git@github.com
-```
-
-If it fails, ensure your public key is added to GitHub:
-```bash
-cat ~/.ssh/id_ed25519_github.pub | pbcopy
-# Then add to: https://github.com/settings/keys
-```
-
-## ✅ Verification
-
-Check that everything is installed:
+If `/nix` still exists from a previous setup, **none of this repo
+needs it**, but it stays out of your way until you remove it:
 
 ```bash
-# Core tools
-which nix darwin-rebuild brew
-
-# Development tools
-which git gh docker aws
-
-# Languages
-which node rustc python3
-node --version
-rustc --version
-
-# CLI tools
-which nvim rg fd fzf bat
-
-# Shell
-echo $SHELL
-starship --version
+bin/uninstall-nix.sh    # prompts YES, then unloads daemon + rm -rf /nix
 ```
 
-## 🔐 Security
+The script never runs without explicit confirmation.
 
-- Never commit `~/.config/nix-config/local/secrets.nix` (gitignored)
-- SSH keys are stored in `~/.ssh/` (not managed by Nix)
-- AWS credentials in `~/.aws/` (not managed by Nix)
-- GitHub tokens managed by `gh auth` (stored securely)
+## Updating
 
-## 📚 Key Features
+```bash
+update           # git pull + brew bundle --upgrade + rebuild
+update --deps    # brew upgrade only (no git pull)
+update --local   # rebuild only (no git, no brew)
+update --check   # report drift, no changes
+```
 
-### Fast Node.js Management
-- **fnm** (Fast Node Manager) - 150x faster than nvm
-- Auto-installs LTS on first shell startup
-- Switch Node versions instantly: `fnm use <version>`
+## License
 
-### Optimized Git Operations
-- **Delta** - Syntax-highlighted diffs
-- **SSH multiplexing** - 5x faster Git operations
-- **Connection sharing** - Reuses SSH connections
-
-### Modern CLI Replacements
-All written in Rust for speed:
-- `rg` (ripgrep) instead of grep
-- `fd` instead of find
-- `bat` instead of cat
-- `eza` instead of ls
-- `bottom` instead of top
-- `zoxide` instead of cd
-
-### Consistent Theming
-Catppuccin Mocha theme across:
-- Terminal (Ghostty)
-- Shell prompt (Starship)
-- Editor (Neovim, Cursor)
-- CLI tools (bat, delta, fzf)
-
-### Lazy Loading
-- Zsh completions defer 300-400ms of startup time
-- Plugins load on-demand
-
-## 📖 Learn More
-
-- [Nix Manual](https://nixos.org/manual/nix/stable/)
-- [Home Manager Manual](https://nix-community.github.io/home-manager/)
-- [nix-darwin](https://github.com/LnL7/nix-darwin)
-- [Zero to Nix](https://zero-to-nix.com/)
-- [Catppuccin Theme](https://github.com/catppuccin/catppuccin)
-
-## 🤝 Contributing
-
-This is a personal configuration, but feel free to:
-- Fork and adapt it for your needs
-- Open issues for bugs
-- Submit PRs for improvements
-
-## 📝 License
-
-MIT License - Use freely for personal or commercial projects.
-
----
-
-**Maintenance**: This configuration is actively maintained and tested on macOS with Apple Silicon.
+Personal config; no warranty.

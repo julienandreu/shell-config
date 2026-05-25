@@ -55,3 +55,6 @@ export EZA_ICONS_AUTO=1
 
 # bat
 export BAT_THEME="Catppuccin Mocha"
+
+# Personal secrets (gitignored). Sourced last so they win.
+[[ -f "$HOME/.config/dotfiles/secrets.env" ]] && . "$HOME/.config/dotfiles/secrets.env"
