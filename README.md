@@ -1,4 +1,4 @@
-# Personal Dotfiles (macOS)
+# shell-config
 
 Opinionated, idempotent dotfiles for a fresh macOS install. Plain shell,
 nothing fancy:
@@ -10,9 +10,8 @@ nothing fancy:
 - macOS preferences (Dock, Keyboard, Firewall, Default browser) applied declaratively.
 - Set up a blank Mac in ~10 minutes; one command after that for everything.
 
-> The repo is named `nix-config` for legacy reasons. There is **no Nix**
-> in the current setup. If you previously installed Nix on this machine,
-> see [Removing an old Nix install](#removing-an-old-nix-install).
+> Migrating from an older Nix-based setup? See
+> [Removing an old Nix install](#removing-an-old-nix-install).
 
 ---
 
@@ -41,7 +40,7 @@ nothing fancy:
 One command. Works on a stock macOS (Apple Silicon or Intel):
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/nix-config/main/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/shell-config/main/install.sh)"
 ```
 
 The installer:

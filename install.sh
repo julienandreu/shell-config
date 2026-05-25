@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Dotfiles Bootstrap Installer
+# shell-config Bootstrap Installer
 # =============================================================================
 # Usage:
-#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/nix-config/main/install.sh)"
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/shell-config/main/install.sh)"
 # =============================================================================
 
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/julienandreu/nix-config.git}"
+REPO_URL="${REPO_URL:-https://github.com/julienandreu/shell-config.git}"
 INSTALL_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
 # Colors
