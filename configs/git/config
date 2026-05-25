@@ -1,0 +1,38 @@
+# ~/.gitconfig - managed by dotfiles repo.
+# Personal user.name/user.email live in ~/.config/dotfiles/git.local
+# (created by setup.sh, gitignored).
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+
+[core]
+    editor = nvim
+    pager = delta
+
+[color]
+    ui = auto
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    light = false
+    side-by-side = false
+    line-numbers = true
+    syntax-theme = Catppuccin Mocha
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+[include]
+    path = ~/.config/dotfiles/git.local

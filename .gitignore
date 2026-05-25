@@ -1,0 +1,26 @@
+# .gitignore
+
+# Secrets
+secrets/*.env
+!secrets/template.env
+.env
+.envrc
+.company-secrets
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+
+# Claude / agent state (per-project caches)
+.claude/
+skills/

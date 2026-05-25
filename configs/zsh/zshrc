@@ -1,0 +1,29 @@
+# ~/.zshrc - entrypoint sourced by every interactive zsh.
+# Managed by the dotfiles repo. Edit configs/zsh/* and run `rebuild`.
+
+# Resolve DOTFILES_DIR. ${(%):-%x} is zsh's "this script's path"; resolve
+# the symlink chain to find the real configs/zsh dir.
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+    _zshrc_path="${(%):-%x}"
+    if [[ -L "$_zshrc_path" ]]; then
+        _zshrc_path="$(readlink "$_zshrc_path")"
+    fi
+    DOTFILES_DIR="$(cd "$(dirname "$_zshrc_path")/../.." && pwd)"
+    unset _zshrc_path
+fi
+ZSH_CONFIG_DIR="$DOTFILES_DIR/configs/zsh"
+
+# Load user machine config (USERNAME, CATPPUCCIN_FLAVOR, etc.).
+[[ -f "$HOME/.config/dotfiles/config.sh" ]] && . "$HOME/.config/dotfiles/config.sh"
+
+# Order matters: env first, then completion (lazy), plugins, aliases/funcs, prompt.
+. "$ZSH_CONFIG_DIR/init.zsh"
+. "$ZSH_CONFIG_DIR/completion.zsh"
+. "$ZSH_CONFIG_DIR/plugins.zsh"
+. "$ZSH_CONFIG_DIR/aliases.zsh"
+. "$ZSH_CONFIG_DIR/functions.zsh"
+
+# Starship prompt
+if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+fi
