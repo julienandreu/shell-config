@@ -57,9 +57,25 @@ step_homebrew() {
         log_success "Homebrew already installed at $(command -v brew)."
         return 0
     fi
-    log_info "Installing Homebrew (you may be prompted for sudo)..."
+
+    # Homebrew's NONINTERACTIVE install never prompts for a password, but a
+    # fresh install needs sudo to create /opt/homebrew. Cache a valid sudo
+    # timestamp up front (sudo prompts on /dev/tty, so this works even when
+    # the script arrived via curl) and keep it warm for the long install.
+    log_info "Homebrew needs administrator access to install."
+    sudo -v || die "Homebrew install requires sudo (administrator) access."
+    while true; do
+        sudo -n true 2>/dev/null || exit
+        sleep 60
+        kill -0 "$$" 2>/dev/null || exit
+    done &
+    local sudo_keepalive_pid=$!
+
+    log_info "Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c \
         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    kill "$sudo_keepalive_pid" 2>/dev/null || true
     ensure_brew_in_path
     log_success "Homebrew installed."
 }
