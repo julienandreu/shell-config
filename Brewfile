@@ -6,6 +6,7 @@
 # =============================================================================
 # Taps
 # =============================================================================
+tap "hashicorp/tap"
 tap "oneleet/tap"
 tap "julienandreu/tap"
 
@@ -55,9 +56,9 @@ brew "uv"             # fast Python package + venv manager
 # Development tools
 # =============================================================================
 brew "docker-compose"
-brew "terraform"
+brew "hashicorp/tap/terraform"
 brew "displayplacer"  # CLI display resolution
-brew "git-sweep"      # branch cleanup
+brew "julienandreu/tap/git-sweep"  # branch cleanup (from your own tap)
 
 # =============================================================================
 # macOS preferences plumbing (used by bin/macos-defaults.sh)
