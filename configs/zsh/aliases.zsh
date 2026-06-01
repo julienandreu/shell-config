@@ -1,18 +1,26 @@
 # aliases.zsh - shell aliases.
 
-# eza (ls replacement)
+# eza (ls replacement) - mirrors nix-config programs.eza
+# The base `eza` alias injects --git/--icons/--group-directories-first/--header;
+# zsh's single-pass alias recursion applies them to ls/ll/la/lt/lla as well.
 if command -v eza >/dev/null 2>&1; then
-    alias ls='eza --group-directories-first --header'
-    alias ll='eza -lah --group-directories-first --header'
-    alias la='eza -a --group-directories-first --header'
-    alias lt='eza --tree --level=2 --group-directories-first'
+    alias eza='eza --git --icons=auto --group-directories-first --header'
+    alias ls='eza'
+    alias ll='eza -lah'
+    alias la='eza -a'
+    alias lt='eza --tree'
+    alias lla='eza -la'
 fi
 
 # bat (cat replacement)
 command -v bat >/dev/null 2>&1 && alias cat='bat --paging=never'
 
-# Vim aliases
-command -v nvim >/dev/null 2>&1 && alias vim='nvim'
+# Neovim aliases - mirrors nix-config programs.neovim (viAlias, vimAlias, vimdiffAlias)
+if command -v nvim >/dev/null 2>&1; then
+    alias vi='nvim'
+    alias vim='nvim'
+    alias vimdiff='nvim -d'
+fi
 
 # Dotfiles ergonomics (resolved via PATH set in init.zsh).
 alias edit-shell='edit-shell.sh'
