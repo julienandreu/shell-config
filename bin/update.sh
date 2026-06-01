@@ -59,7 +59,7 @@ case "$mode" in
         git pull --ff-only || die "git pull failed (non-fast-forward?)"
 
         log_section "brew bundle --upgrade"
-        brew bundle --file="$DOTFILES_DIR/Brewfile" --upgrade --no-lock --quiet || \
+        brew bundle --file="$DOTFILES_DIR/Brewfile" --upgrade --quiet || \
             die "brew bundle --upgrade failed."
 
         exec "$SCRIPT_DIR/rebuild.sh"
@@ -67,7 +67,7 @@ case "$mode" in
 
     deps)
         log_section "brew bundle --upgrade"
-        brew bundle --file="$DOTFILES_DIR/Brewfile" --upgrade --no-lock --quiet || \
+        brew bundle --file="$DOTFILES_DIR/Brewfile" --upgrade --quiet || \
             die "brew bundle --upgrade failed."
         exec "$SCRIPT_DIR/rebuild.sh"
         ;;

@@ -61,7 +61,7 @@ stage_brew() {
     if ! command -v brew >/dev/null 2>&1; then
         die "Homebrew not installed. Run setup.sh first."
     fi
-    brew bundle --file="$DOTFILES_DIR/Brewfile" --no-lock --quiet || \
+    brew bundle --file="$DOTFILES_DIR/Brewfile" --quiet || \
         die "brew bundle failed."
     log_success "Brewfile applied."
 }
