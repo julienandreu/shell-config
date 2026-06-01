@@ -5,6 +5,7 @@ BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
 if [[ -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
     . "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    ZSH_AUTOSUGGEST_STRATEGY=(history)
 fi
 
 # Catppuccin highlight palette (vendored).
@@ -13,6 +14,7 @@ CATPPUCCIN_HL="${DOTFILES_DIR:-$HOME/.dotfiles}/configs/zsh-plugins/catppuccin_$
 
 if [[ -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
     . "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+    ZSH_HIGHLIGHT_HIGHLIGHTERS=(main)
 fi
 
 unset BREW_PREFIX CATPPUCCIN_HL

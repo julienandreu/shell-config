@@ -1,11 +1,24 @@
 # init.zsh - environment, PATH, tool initializers.
 
+# Keep PATH-like arrays free of duplicates.
+typeset -U path cdpath fpath manpath
+
 # Terminal compatibility (Ghostty)
 export TERM=xterm-256color
 
 # Editor
 export EDITOR="${EDITOR:-nvim}"
 export VISUAL="$EDITOR"
+
+# History (mirrors nix-config: shared across sessions, dedup on write,
+# ignore commands typed with a leading space).
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=10000
+SAVEHIST=10000
+mkdir -p "$(dirname "$HISTFILE")"
+setopt HIST_FCNTL_LOCK HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY
+setopt NO_APPEND_HISTORY NO_EXTENDED_HISTORY NO_HIST_EXPIRE_DUPS_FIRST
+setopt NO_HIST_FIND_NO_DUPS NO_HIST_IGNORE_ALL_DUPS NO_HIST_SAVE_NO_DUPS
 
 # Homebrew (auto-detects arch).
 if [[ -x /opt/homebrew/bin/brew ]]; then
