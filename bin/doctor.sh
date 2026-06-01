@@ -190,13 +190,6 @@ check_apps() {
     done
 }
 
-check_nix_remnant() {
-    if [[ -d /nix ]]; then
-        log_section "Nix"
-        warn "/nix still present. Remove with: bin/uninstall-nix.sh (optional)."
-    fi
-}
-
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
@@ -211,7 +204,6 @@ check_python
 check_ai_assistants
 check_gh
 check_apps
-check_nix_remnant
 
 printf '\n'
 if [[ "$BLOCKING_FAILS" -gt 0 ]]; then

@@ -380,7 +380,6 @@ setup_cursor() {
 
         # Language Support
         "rust-lang.rust-analyzer"                    # Rust
-        "jnoortheen.nix-ide"                        # Nix
         "hashicorp.terraform"                        # Terraform
         "charliermarsh.ruff"                         # Python (Ruff)
         "ms-python.python"                           # Python (base support)

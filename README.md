@@ -10,9 +10,6 @@ nothing fancy:
 - macOS preferences (Dock, Keyboard, Firewall, Default browser) applied declaratively.
 - Set up a blank Mac in ~10 minutes; one command after that for everything.
 
-> Migrating from an older Nix-based setup? See
-> [Removing an old Nix install](#removing-an-old-nix-install).
-
 ---
 
 ## Table of contents
@@ -30,8 +27,7 @@ nothing fancy:
 6. [Diagnosing problems](#diagnosing-problems)
 7. [Repository layout](#repository-layout)
 8. [How the installer works](#how-the-installer-works)
-9. [Removing an old Nix install](#removing-an-old-nix-install)
-10. [FAQ](#faq)
+9. [FAQ](#faq)
 
 ---
 
@@ -101,7 +97,7 @@ After installation, these are all on your PATH (provided by `configs/zsh/init.zs
 | `update --deps` | Same as `update` but skips `git pull`. |
 | `update --local` | Just `rebuild`. Same as typing `rebuild`. |
 | `update --check` | Drift check. Reports anything missing without changing the system. Exit 1 on drift. |
-| `doctor` | Non-destructive diagnostics: platform, Homebrew + Brewfile drift, dotfiles config, symlink integrity, fnm + Node, Python + PEP 668 marker, AI assistants, `gh` auth, GUI apps, leftover `/nix`. |
+| `doctor` | Non-destructive diagnostics: platform, Homebrew + Brewfile drift, dotfiles config, symlink integrity, fnm + Node, Python + PEP 668 marker, AI assistants, `gh` auth, GUI apps. |
 | `doctor --fix` | Opt-in fixes (currently: disables PEP-668 marker if `ALLOW_GLOBAL_PIP=1`). |
 | `edit-shell` | Open `configs/zsh/init.zsh` in `$EDITOR`; prompt to `rebuild` on save. |
 | `edit-config` | Open the repo root in `$EDITOR`. |
@@ -266,7 +262,6 @@ Common conditions and fixes:
 | `Claude Code not installed` | `curl -fsSL https://claude.ai/install.sh \| bash`. |
 | `Codex not installed` | `npm install -g @openai/codex`. |
 | `gh not authenticated` | `gh auth login`. |
-| `/nix still present` | Optional: `bin/uninstall-nix.sh` (prompts YES). |
 
 ---
 
@@ -287,7 +282,6 @@ Common conditions and fixes:
 │   ├── macos-defaults.sh    # `defaults write` + firewall + dockutil
 │   ├── set-display.sh       # displayplacer per Mac model
 │   ├── merge-cursor-settings.sh  # deep-merge into Cursor settings.json
-│   ├── uninstall-nix.sh     # optional, destructive, prompts YES
 │   └── lib/                 # log / platform / config / symlink helpers
 ├── configs/
 │   ├── zsh/{zshrc,init.zsh,aliases.zsh,functions.zsh,completion.zsh,plugins.zsh}
@@ -346,32 +340,6 @@ All stages are idempotent. Re-running `rebuild` with no changes is a no-op.
 
 ---
 
-## Removing an old Nix install
-
-If you migrated from a previous Nix-based setup, `/nix` is still on disk but
-**nothing in this repo needs it**. Reclaim the space when you're confident the
-new setup is working:
-
-```bash
-bin/uninstall-nix.sh
-```
-
-The script:
-
-1. Prints exactly what it will do.
-2. Requires you to type `YES` (uppercase) to proceed.
-3. Unloads `nix-daemon` LaunchDaemons.
-4. Kills lingering `nix-daemon` / `nix` processes.
-5. Unmounts `/nix` if it's a separate APFS volume, then `rm -rf /nix`.
-6. Removes `~/.nix-profile`, `~/.nix-defexpr`, `~/.nix-channels`,
-   `~/.local/state/nix`.
-7. Comments out any `.nix-profile` source lines in `~/.zshrc`, `~/.bash_profile`,
-   `~/.profile`, `~/.bashrc` (backs up to `*.pre-nix-uninstall`).
-
-It is **never run automatically**.
-
----
-
 ## FAQ
 
 **Q: I want to install something without putting it in the Brewfile.**
@@ -398,12 +366,10 @@ outside the repo. Same checkout, different `config.sh` per machine.
 `*.backup.YYYYMMDD-HHMMSS`. macOS defaults can be inspected with `defaults read
 <domain>` and reset manually if needed.
 
-**Q: How is this different from chezmoi / yadm / nix-darwin / a Brewfile in a
-gist?**
-Less flexible than chezmoi (no templates beyond Catppuccin), less powerful than
-nix-darwin (no atomic system state), but easier to read and faster to onboard.
-The target audience is "one person, one or two machines, wants to set up a Mac
-in under 15 minutes."
+**Q: How is this different from chezmoi / yadm / a Brewfile in a gist?**
+Less flexible than chezmoi (no templates beyond Catppuccin), but easier to read
+and faster to onboard. The target audience is "one person, one or two machines,
+wants to set up a Mac in under 15 minutes."
 
 ---
 

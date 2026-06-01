@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # set-display.sh - set "More Space" resolution based on Mac model.
-# Ported from machines/default.nix system.activationScripts.postActivation.
 # Add new models by running 'sysctl hw.model' and 'displayplacer list'.
 
 set -euo pipefail

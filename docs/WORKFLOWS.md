@@ -99,7 +99,7 @@ update --check  # brew bundle check --verbose; exits 1 if drift
 ## Diagnose
 
 ```bash
-doctor          # platform, brew, config, symlinks, fnm, python, ai, gh, apps, /nix
+doctor          # platform, brew, config, symlinks, fnm, python, ai, gh, apps
 doctor --fix    # opt-in: disable EXTERNALLY-MANAGED if ALLOW_GLOBAL_PIP=1
 ```
 
@@ -128,14 +128,6 @@ exec zsh   # init.zsh sources secrets.env at the end
 Permissions: the file lives in `~/.config/dotfiles/` and is `chmod 600`
 when `onboard.sh` writes to it.
 
-## Remove the old Nix install (optional)
-
-```bash
-bin/uninstall-nix.sh   # prompts YES; unloads daemon, rm -rf /nix, cleans rc files
-```
-
-The dotfiles never need /nix. This script is the only path that removes it.
-
 ## Quick reference
 
 | Situation                            | Command          |
@@ -148,4 +140,3 @@ The dotfiles never need /nix. This script is the only path that removes it.
 | Drift check (no changes)             | `update --check` |
 | Diagnose                             | `doctor`         |
 | Python cheat sheet                   | `py-help`        |
-| Remove Nix (optional)                | `bin/uninstall-nix.sh` |

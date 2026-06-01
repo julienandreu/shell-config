@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # macos-defaults.sh - apply macOS system preferences declaratively.
 #
-# Ported from machines/default.nix (nix-darwin system.defaults +
-# networking.applicationFirewall blocks). Idempotent: `defaults write`
-# is a no-op when the target value already matches.
+# Idempotent: `defaults write` is a no-op when the target value already
+# matches.
 #
 # Requires sudo for the firewall block. Other settings run as the user.
 

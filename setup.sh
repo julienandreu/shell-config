@@ -13,7 +13,6 @@
 #   8. fnm install --lts (if no default node)
 #   9. Install claude-code (via official curl script) + codex (via npm)
 #   10. Optional onboarding wizard
-#   11. Optional Nix removal hint
 # =============================================================================
 
 set -euo pipefail
@@ -221,15 +220,6 @@ step_onboard() {
     fi
 }
 
-step_nix_uninstall_hint() {
-    if [[ ! -d /nix ]]; then return 0; fi
-    log_section "Optional: remove old Nix install"
-    printf '/nix still exists on this machine.\n'
-    printf 'The new shell-only dotfiles do not need it.\n'
-    printf 'Remove it with:  %s/bin/uninstall-nix.sh\n' "$DOTFILES_DIR"
-    printf '(That script is destructive and never auto-runs.)\n'
-}
-
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
@@ -247,7 +237,6 @@ main() {
     step_node_lts
     step_ai_assistants
     step_onboard
-    step_nix_uninstall_hint
 
     printf '\n'
     log_success "Setup complete. Open a new terminal or run 'exec zsh'."
