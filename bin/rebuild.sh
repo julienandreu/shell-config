@@ -18,6 +18,8 @@ export DOTFILES_DIR
 . "$SCRIPT_DIR/lib/config.sh"
 # shellcheck source=lib/symlink.sh
 . "$SCRIPT_DIR/lib/symlink.sh"
+# shellcheck source=lib/sudo.sh
+. "$SCRIPT_DIR/lib/sudo.sh"
 
 # -----------------------------------------------------------------------------
 # Helpers
@@ -138,6 +140,7 @@ main() {
     log_header "rebuild.sh"
     require_macos
     ensure_brew_in_path
+    ensure_sudo_session
     load_dotfiles_config
     CATPPUCCIN_FLAVOR_TITLE="$(flavor_title_case "$CATPPUCCIN_FLAVOR")"
     export CATPPUCCIN_FLAVOR_TITLE

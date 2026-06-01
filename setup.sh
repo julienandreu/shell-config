@@ -27,6 +27,8 @@ export DOTFILES_DIR
 . "$DOTFILES_DIR/bin/lib/platform.sh"
 # shellcheck source=bin/lib/config.sh
 . "$DOTFILES_DIR/bin/lib/config.sh"
+# shellcheck source=bin/lib/sudo.sh
+. "$DOTFILES_DIR/bin/lib/sudo.sh"
 
 # -----------------------------------------------------------------------------
 # Prompts
@@ -58,24 +60,12 @@ step_homebrew() {
         return 0
     fi
 
-    # Homebrew's NONINTERACTIVE install never prompts for a password, but a
-    # fresh install needs sudo to create /opt/homebrew. Cache a valid sudo
-    # timestamp up front (sudo prompts on /dev/tty, so this works even when
-    # the script arrived via curl) and keep it warm for the long install.
-    log_info "Homebrew needs administrator access to install."
-    sudo -v || die "Homebrew install requires sudo (administrator) access."
-    while true; do
-        sudo -n true 2>/dev/null || exit
-        sleep 60
-        kill -0 "$$" 2>/dev/null || exit
-    done &
-    local sudo_keepalive_pid=$!
-
+    # The sudo timestamp is already warm (ensure_sudo_session runs first in
+    # main), so Homebrew's NONINTERACTIVE install can create /opt/homebrew
+    # without prompting again.
     log_info "Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c \
         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    kill "$sudo_keepalive_pid" 2>/dev/null || true
     ensure_brew_in_path
     log_success "Homebrew installed."
 }
@@ -243,6 +233,7 @@ step_onboard() {
 main() {
     log_header "Dotfiles Setup"
     require_macos
+    ensure_sudo_session
 
     step_homebrew
     step_flavor
