@@ -98,6 +98,7 @@ stage_symlinks() {
     ensure_symlink "$DOTFILES_DIR/configs/bat/config"            "$HOME/.config/bat/config"
     ensure_symlink "$DOTFILES_DIR/configs/bottom/bottom.toml"    "$HOME/.config/bottom/bottom.toml"
     ensure_symlink "$DOTFILES_DIR/configs/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
+    ensure_symlink "$DOTFILES_DIR/configs/tealdeer/config.toml"  "$HOME/Library/Application Support/tealdeer/config.toml"
     ensure_symlink "$DOTFILES_DIR/configs/nvim"                  "$HOME/.config/nvim"
 
     # Rendered (templated) configs

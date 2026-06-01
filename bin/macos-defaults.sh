@@ -126,6 +126,35 @@ stage_firewall() {
 }
 
 # -----------------------------------------------------------------------------
+# Login items (launch apps at login)
+# -----------------------------------------------------------------------------
+
+stage_login_items() {
+    log_section "Login items"
+    local repo_dir src dst
+    repo_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
+    src="$repo_dir/configs/launchagents/com.julienandreu.karabiner-elements.plist"
+    dst="$HOME/Library/LaunchAgents/com.julienandreu.karabiner-elements.plist"
+
+    if [[ ! -d "/Applications/Karabiner-Elements.app" ]]; then
+        log_warning "Karabiner-Elements not installed; skipping launch-at-login."
+        return
+    fi
+
+    mkdir -p "$HOME/Library/LaunchAgents"
+    # launchd rejects symlinked plists, so copy (only when changed).
+    if [[ ! -f "$dst" ]] || ! cmp -s "$src" "$dst"; then
+        cp "$src" "$dst"
+        log_step "installed $dst"
+    fi
+    # Reload so it runs now and at every login (load -w is deprecated but works).
+    launchctl unload "$dst" 2>/dev/null || true
+    launchctl load -w "$dst" 2>/dev/null || \
+        log_warning "launchctl load failed for Karabiner agent."
+    log_success "Karabiner-Elements set to launch at login."
+}
+
+# -----------------------------------------------------------------------------
 # Restart UI services so changes take effect
 # -----------------------------------------------------------------------------
 
@@ -147,6 +176,7 @@ main() {
     stage_dock
     stage_default_browser
     stage_firewall
+    stage_login_items
     stage_restart
     log_success "macOS defaults applied."
 }

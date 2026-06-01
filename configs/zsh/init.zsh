@@ -47,7 +47,13 @@ if command -v fzf >/dev/null 2>&1; then
         [[ -f "$FZF_SHELL_DIR/completion.zsh"   ]] && . "$FZF_SHELL_DIR/completion.zsh"
     fi
     export FZF_DEFAULT_COMMAND='fd --type f'
-    export FZF_DEFAULT_OPTS='--height 40% --border'
+    # Catppuccin Mocha palette (matches bat/delta theming).
+    export FZF_DEFAULT_OPTS="--height 40% --border \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a \
+--color=border:#6c7086,label:#cdd6f4"
 fi
 
 # eza

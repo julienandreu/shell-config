@@ -1,0 +1,10 @@
+# tealdeer (tldr) configuration.
+# Symlinked to ~/Library/Application Support/tealdeer/config.toml by rebuild.sh.
+# Mirrors the old nix-config programs.tealdeer settings.
+
+[display]
+compact = false
+use_pager = true
+
+[updates]
+auto_update = true
