@@ -10,9 +10,10 @@
 # entry is loaded, so `brew bundle` never stops to ask "trust this tap?" on a
 # fresh machine. Trusting a tap covers every formula and cask inside it
 # (Homebrew::Trust.trusted? falls back to the tap), so the individual
-# hashicorp/julienandreu entries below need no annotation of their own.
+# anomalyco/hashicorp/julienandreu entries below need no annotation of their own.
 # Only ever set this on taps you actually vet: it means Homebrew will load and
 # execute their Ruby without prompting.
+tap "anomalyco/tap", trusted: true
 tap "hashicorp/tap", trusted: true
 tap "julienandreu/tap", trusted: true
 
@@ -68,6 +69,18 @@ brew "displayplacer"  # CLI display resolution
 brew "julienandreu/tap/git-sweep"  # branch cleanup (from your own tap)
 
 # =============================================================================
+# AI coding assistants (terminal)
+# =============================================================================
+# Claude Code and Codex are NOT here: they ship as a curl installer and an npm
+# global respectively, so setup.sh installs them interactively instead.
+brew "anomalyco/tap/opencode"  # opencode - AI coding agent for the terminal
+# grok-build is a cask because x.ai ships prebuilt binaries rather than a
+# formula; it installs the `grok` and `agent` binaries plus shell completions,
+# not an .app. It also has a built-in self-updater (`grok update`) - prefer
+# `brew upgrade` so the Caskroom version stays in sync with what is on disk.
+cask "grok-build"              # grok - extensible coding agent for the terminal
+
+# =============================================================================
 # macOS preferences plumbing (used by bin/macos-defaults.sh)
 # =============================================================================
 brew "dockutil"       # declarative dock persistent-apps
@@ -99,14 +112,17 @@ cask "font-meslo-lg-nerd-font"
 # =============================================================================
 # Mac App Store apps (via mas)
 # =============================================================================
-# App Store exclusives, so there is no cask for them. `brew bundle` installs
-# `mas` on demand, but it is declared explicitly so it shows up in the manifest
-# and in `brew bundle check`.
+# `mas` is kept as a tool, not as an install mechanism. Use it to look up an
+# app's numeric id (`mas list`) when you need one.
 #
-# Caveat: `mas install` only works when the App Store is signed in AND the app
-# is already in that Apple ID's purchase history ("obtained" at least once,
-# even for free apps). On a brand-new Apple ID it will fail; that is now a
-# non-fatal warning in `rebuild`, and the fallback is one click in the App
-# Store. `id:` must be an unquoted Integer.
+# No `mas "..."` entries live here on purpose. `mas install` only works when
+# the App Store is signed in AND the app is already in that Apple ID's purchase
+# history ("obtained" at least once, even for free apps), so on a fresh machine
+# or a new Apple ID it simply fails. Making a bootstrap depend on that is not
+# worth it for optional apps.
 brew "mas"
-mas "Amphetamine", id: 937984704   # keep-awake utility (no cask exists)
+
+# Optional App Store apps - NOT installed by `rebuild`. `onboard.sh` offers to
+# open each product page so you can get it in one click, and skipping is fine.
+#   Amphetamine (keep-awake utility, App Store exclusive, no cask):
+#     https://apps.apple.com/app/id937984704

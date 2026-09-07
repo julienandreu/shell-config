@@ -163,6 +163,18 @@ check_ai_assistants() {
     else
         warn "Codex not installed (run 'npm install -g @openai/codex')."
     fi
+    # opencode and grok are Brewfile-managed, so the fix is a rebuild, not a
+    # bespoke installer.
+    if command -v opencode >/dev/null 2>&1; then
+        ok "opencode at $(command -v opencode)."
+    else
+        warn "opencode not installed (run 'rebuild')."
+    fi
+    if command -v grok >/dev/null 2>&1; then
+        ok "grok at $(command -v grok)."
+    else
+        warn "grok not installed (run 'rebuild')."
+    fi
 }
 
 check_gh() {

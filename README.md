@@ -52,7 +52,9 @@ The installer:
    - Generating a **GitHub SSH key** + helping you add it to your account.
    - Optional: **`gh auth login`**, **Node LTS** via `fnm`, **Claude Code**
      (official installer), **OpenAI Codex** (npm global), and the **`onboard.sh`**
-     wizard for 1Password / Cursor extensions / API keys.
+     wizard for 1Password / Cursor extensions / API keys / optional App Store
+     apps. (**opencode** and **grok** need no prompt: they come from the
+     Brewfile in the `rebuild` above.)
 
 When it finishes:
 
@@ -75,12 +77,25 @@ A single [`Brewfile`](Brewfile) is the source of truth. Categories:
 | **Rust-based utilities** | `ripgrep`, `fd`, `fzf`, `jq`, `jaq`, `zoxide`, `bat`, `eza`, `bottom`, `dust`, `sd`, `procs`, `git-delta`, `just`, `hyperfine`, `xh`, `tealdeer` |
 | **Languages** | `fnm` (Node), `rust`, `rust-analyzer`, `python@3.13`, `ruff`, `pipx`, `uv` |
 | **Dev tools** | `docker-compose`, `terraform`, `displayplacer`, `git-sweep`, `dockutil` |
+| **AI coding agents** | `opencode`, `grok-build` (the `grok` CLI) |
 | **GUI apps** | 1Password, Cursor, Docker Desktop, Ghostty, Google Chrome, Karabiner-Elements, Linear, Slack |
-| **Mac App Store** | Amphetamine (via `mas`) |
+| **Mac App Store** | `mas` only - no apps installed automatically (see [below](#mac-app-store-apps)) |
 | **Fonts** | MesloLG Nerd Font |
-| **Taps** | `hashicorp/tap`, `julienandreu/tap` (both `trusted: true`) |
+| **Taps** | `anomalyco/tap`, `hashicorp/tap`, `julienandreu/tap` (all `trusted: true`) |
 
-Outside Homebrew (installed by `setup.sh` interactively):
+Four terminal AI agents are covered, split by how upstream ships them.
+
+Via Homebrew, so `rebuild` installs them and `update --deps` upgrades them:
+
+- **opencode** - `anomalyco/tap/opencode`, the tap build (no Node dependency,
+  unlike `homebrew/core/opencode`). Sign in with `opencode auth login`.
+- **grok** - the `grok-build` cask. It is a cask rather than a formula because
+  x.ai ships prebuilt binaries; it installs `grok` and `agent` plus shell
+  completions, not an `.app`. It has its own updater (`grok update`), so prefer
+  `brew upgrade` to keep the Caskroom version in step with what is on disk.
+
+Outside Homebrew (installed by `setup.sh` interactively), because neither has a
+usable Homebrew entry:
 
 - **Claude Code** via `curl -fsSL https://claude.ai/install.sh | bash`
 - **OpenAI Codex** via `npm install -g @openai/codex` (needs Node from `fnm`)
@@ -101,14 +116,15 @@ formulae, casks or commands, which otherwise means an interactive
 pre-authorizes them declaratively:
 
 ```ruby
+tap "anomalyco/tap", trusted: true
 tap "hashicorp/tap", trusted: true
 tap "julienandreu/tap", trusted: true
 ```
 
 `brew bundle` writes these into `~/.homebrew/trust.json` *before* it loads any
 entry, so nothing prompts. Trusting a tap covers every formula and cask inside
-it, so `hashicorp/tap/terraform` and `julienandreu/tap/git-sweep` need no
-annotation of their own.
+it, so `anomalyco/tap/opencode`, `hashicorp/tap/terraform` and
+`julienandreu/tap/git-sweep` need no annotation of their own.
 
 Only set this on taps you actually vet: it tells Homebrew to load and execute
 their Ruby without asking. Adding a new third-party tap? Add `trusted: true`
@@ -128,21 +144,29 @@ disables the check for everything, forever.
 
 ### Mac App Store apps
 
-Amphetamine has no Homebrew cask (App Store exclusive), so it goes through
-`mas`:
+**Nothing is installed from the App Store automatically.** The Brewfile keeps
+`mas` as a tool but declares no `mas "..."` entries:
 
 ```ruby
 brew "mas"
-mas "Amphetamine", id: 937984704
 ```
 
-`mas install` only works when the App Store is signed in **and** the app is
-already in that Apple ID's purchase history, even for free apps. On a brand-new
-Apple ID it fails; that is a non-fatal warning now, and the fallback is one
-click in the App Store. Get an app's `id` with `mas list`, or from a copy you
-already have: `mdls -name kMDItemAppStoreAdamID /Applications/<App>.app`.
+The reason is that `mas install` only works when the App Store is signed in
+**and** the app is already in that Apple ID's purchase history, even for free
+apps. On a brand-new Apple ID it just fails, so a bootstrap should not depend on
+it for apps that are optional anyway.
 
-Skip the App Store stage entirely with `HOMEBREW_BUNDLE_MAS_SKIP="Amphetamine"`.
+Instead, `onboard.sh` step 10 offers to open the product page so you can install
+with one click, and declining is a perfectly good answer:
+
+| App | What it is | Link |
+|---|---|---|
+| Amphetamine | Keep-awake utility (free, App Store exclusive, no cask) | <https://apps.apple.com/app/id937984704> |
+
+Adding another optional App Store app? List it in the Brewfile comment and add a
+prompt to `setup_app_store_apps` in `onboard.sh`. Get an app's numeric id with
+`mas list`, or from a copy you already have:
+`mdls -name kMDItemAppStoreAdamID /Applications/<App>.app`.
 
 ### When a package fails to install
 
@@ -350,6 +374,7 @@ Common conditions and fixes:
 | `No active Node` | `fnm install --lts && fnm default lts-latest`. |
 | `Claude Code not installed` | `curl -fsSL https://claude.ai/install.sh \| bash`. |
 | `Codex not installed` | `npm install -g @openai/codex`. |
+| `opencode not installed` / `grok not installed` | `rebuild` - both are Brewfile entries. |
 | `gh not authenticated` | `gh auth login`. |
 
 ---
