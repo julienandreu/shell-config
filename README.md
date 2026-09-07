@@ -72,17 +72,106 @@ A single [`Brewfile`](Brewfile) is the source of truth. Categories:
 | Category | Examples |
 |---|---|
 | **Core CLI** | `git`, `gh`, `awscli`, `neovim`, `starship`, `zsh-autosuggestions`, `zsh-syntax-highlighting` |
-| **Rust-based utilities** | `ripgrep`, `fd`, `fzf`, `jq`, `zoxide`, `bat`, `eza`, `bottom`, `dust`, `sd`, `procs`, `git-delta`, `just`, `hyperfine`, `xh`, `tealdeer` |
+| **Rust-based utilities** | `ripgrep`, `fd`, `fzf`, `jq`, `jaq`, `zoxide`, `bat`, `eza`, `bottom`, `dust`, `sd`, `procs`, `git-delta`, `just`, `hyperfine`, `xh`, `tealdeer` |
 | **Languages** | `fnm` (Node), `rust`, `rust-analyzer`, `python@3.13`, `ruff`, `pipx`, `uv` |
 | **Dev tools** | `docker-compose`, `terraform`, `displayplacer`, `git-sweep`, `dockutil` |
-| **GUI apps** | 1Password, Cursor, Docker Desktop, Ghostty, Google Chrome, Karabiner-Elements, Linear, Oneleet Agent, Slack |
+| **GUI apps** | 1Password, Cursor, Docker Desktop, Ghostty, Google Chrome, Karabiner-Elements, Linear, Slack |
+| **Mac App Store** | Amphetamine (via `mas`) |
 | **Fonts** | MesloLG Nerd Font |
-| **Taps** | `oneleet/tap`, `julienandreu/tap` |
+| **Taps** | `hashicorp/tap`, `julienandreu/tap` (both `trusted: true`) |
 
 Outside Homebrew (installed by `setup.sh` interactively):
 
 - **Claude Code** via `curl -fsSL https://claude.ai/install.sh | bash`
 - **OpenAI Codex** via `npm install -g @openai/codex` (needs Node from `fnm`)
+
+Deliberately **not** in the Brewfile:
+
+- **Oneleet Agent** - an MDM/company-provisioned security agent. It self-updates,
+  installs a root launchd daemon, and lives in a third-party tap, so Homebrew's
+  Caskroom version drifts from what is actually on disk and every re-install or
+  upgrade needs root. Let MDM own it, or install once by hand:
+  `brew install --cask oneleet/tap/oneleet-agent`.
+
+### Tap trust
+
+Homebrew requires non-official taps to be trusted before it will load their
+formulae, casks or commands, which otherwise means an interactive
+`brew trust ...` prompt part-way through a fresh bootstrap. The Brewfile
+pre-authorizes them declaratively:
+
+```ruby
+tap "hashicorp/tap", trusted: true
+tap "julienandreu/tap", trusted: true
+```
+
+`brew bundle` writes these into `~/.homebrew/trust.json` *before* it loads any
+entry, so nothing prompts. Trusting a tap covers every formula and cask inside
+it, so `hashicorp/tap/terraform` and `julienandreu/tap/git-sweep` need no
+annotation of their own.
+
+Only set this on taps you actually vet: it tells Homebrew to load and execute
+their Ruby without asking. Adding a new third-party tap? Add `trusted: true`
+alongside it, or the next fresh install will stop and ask.
+
+The manual equivalents, if you need them:
+
+```bash
+brew trust <tap>                 # trust a whole tap
+brew trust --cask <full/name>    # trust one cask
+brew trust --json v1             # show the current trust store
+```
+
+There is also a global `HOMEBREW_NO_REQUIRE_TAP_TRUST=1` opt-out. This repo
+does not use it: trusting two named taps is scoped, `HOMEBREW_NO_REQUIRE_TAP_TRUST`
+disables the check for everything, forever.
+
+### Mac App Store apps
+
+Amphetamine has no Homebrew cask (App Store exclusive), so it goes through
+`mas`:
+
+```ruby
+brew "mas"
+mas "Amphetamine", id: 937984704
+```
+
+`mas install` only works when the App Store is signed in **and** the app is
+already in that Apple ID's purchase history, even for free apps. On a brand-new
+Apple ID it fails; that is a non-fatal warning now, and the fallback is one
+click in the App Store. Get an app's `id` with `mas list`, or from a copy you
+already have: `mdls -name kMDItemAppStoreAdamID /Applications/<App>.app`.
+
+Skip the App Store stage entirely with `HOMEBREW_BUNDLE_MAS_SKIP="Amphetamine"`.
+
+### When a package fails to install
+
+A single broken package never aborts the run. `brew bundle` installs everything
+it can and only reports failures at the end; `rebuild` surfaces those in a
+closing summary and continues with symlinks, templates and macOS defaults, so
+`setup.sh` still reaches the git-identity, SSH-key, `gh`-auth and Node steps.
+
+To get past a package that cannot install on this machine:
+
+```bash
+# Skip specific entries (Homebrew-native, space-separated)
+HOMEBREW_BUNDLE_CASK_SKIP="font-meslo-lg-nerd-font" rebuild
+HOMEBREW_BUNDLE_BREW_SKIP="terraform" rebuild
+
+# Skip the Brewfile stage entirely
+SKIP_BREW=1 rebuild
+
+# Same vars work on the bootstrap one-liner
+HOMEBREW_BUNDLE_CASK_SKIP="font-meslo-lg-nerd-font" \
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/julienandreu/shell-config/main/install.sh)"
+```
+
+`rebuild` runs `brew bundle --no-upgrade`: it asserts that everything in the
+Brewfile is *present*, and never chases new versions. That matters because a
+cask upgrade uninstalls the old version first, which fails for casks with a
+machine-wide Caskroom but per-user artifacts (fonts land in `~/Library/Fonts`,
+so a second user account on a shared Mac hits the other user's files).
+Upgrading is the explicit job of `update --deps`.
 
 ---
 
@@ -92,7 +181,7 @@ After installation, these are all on your PATH (provided by `configs/zsh/init.zs
 
 | Command | What it does |
 |---|---|
-| `rebuild` | Apply local edits: `brew bundle` + render templates + refresh symlinks + macOS defaults. Idempotent - safe to run anytime. |
+| `rebuild` | Apply local edits: `brew bundle --no-upgrade` + render templates + refresh symlinks + macOS defaults. Idempotent - safe to run anytime. Never upgrades; never aborts on a single failed package. |
 | `update` | Pull the repo, `brew bundle --upgrade`, then `rebuild`. Full sync. Refuses if working tree is dirty. |
 | `update --deps` | Same as `update` but skips `git pull`. |
 | `update --local` | Just `rebuild`. Same as typing `rebuild`. |
@@ -257,7 +346,7 @@ Common conditions and fixes:
 |---|---|
 | `Missing ~/.config/dotfiles/config.sh` | Run `./setup.sh` (or copy the snippet from [Per-machine secrets](#per-machine-secrets-and-identity)). |
 | `~/.zshrc is not the expected symlink` | Run `rebuild`. |
-| `Brewfile drift` | Run `update --deps` (or `rebuild`). |
+| `Brewfile drift` | Run `update --deps` (or `rebuild`). If one package keeps failing, see [When a package fails to install](#when-a-package-fails-to-install). |
 | `No active Node` | `fnm install --lts && fnm default lts-latest`. |
 | `Claude Code not installed` | `curl -fsSL https://claude.ai/install.sh \| bash`. |
 | `Codex not installed` | `npm install -g @openai/codex`. |
@@ -325,7 +414,7 @@ Three layers:
    walks through git + SSH + gh + Node + Claude/Codex + onboard.
 3. **`bin/rebuild.sh`** - the workhorse. Runs every time you change the
    `Brewfile` or anything under `configs/`. Stages:
-   - `stage_brew` - `brew bundle --file=Brewfile`
+   - `stage_brew` - `brew bundle install --file=Brewfile --no-upgrade` (non-fatal; honours `SKIP_BREW=1`)
    - `stage_render_templates` - sed-substitute `__CATPPUCCIN_FLAVOR__` and
      `__CATPPUCCIN_FLAVOR_TITLE__` in `*.in` files into `~/.cache/dotfiles/rendered/`
    - `stage_symlinks` - idempotent `ensure_symlink` for each config; backs up
