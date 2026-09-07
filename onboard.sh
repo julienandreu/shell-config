@@ -132,7 +132,12 @@ is_slack_configured() {
 }
 
 is_ai_assistants_configured() {
-    command -v claude &>/dev/null && command -v codex &>/dev/null
+    command -v claude &>/dev/null && command -v codex &>/dev/null && \
+    command -v opencode &>/dev/null && command -v grok &>/dev/null
+}
+
+is_amphetamine_installed() {
+    [[ -d "/Applications/Amphetamine.app" ]]
 }
 
 # =============================================================================
@@ -561,7 +566,7 @@ setup_slack() {
 # =============================================================================
 
 setup_ai_assistants() {
-    log_step_header "9" "AI Coding Assistants - Claude Code & Codex"
+    log_step_header "9" "AI Coding Assistants - Claude Code, Codex, opencode & grok"
 
     if is_ai_assistants_configured; then
         log_success "AI assistants are already configured!"
@@ -571,7 +576,7 @@ setup_ai_assistants() {
         fi
     fi
 
-    log_info "Claude Code and Codex are AI coding assistants in your terminal."
+    log_info "Claude Code, Codex, opencode and grok are AI coding agents in your terminal."
     echo ""
 
     # Claude Code
@@ -655,14 +660,66 @@ setup_ai_assistants() {
     fi
 
     echo ""
+
+    # opencode and grok come from the Brewfile, so `rebuild` installs them.
+    # Both sign in through their own interactive flow rather than an env var,
+    # so there is no API key to stash in secrets.env here.
+    if command -v opencode &>/dev/null; then
+        log_success "opencode is installed"
+        log_step "Sign in with: opencode auth login"
+    else
+        log_warning "opencode not installed. Run 'rebuild' (it is in the Brewfile)."
+    fi
+
+    echo ""
+
+    if command -v grok &>/dev/null; then
+        log_success "grok is installed"
+        log_step "Sign in by running: grok"
+    else
+        log_warning "grok not installed. Run 'rebuild' (cask 'grok-build' is in the Brewfile)."
+    fi
+
+    echo ""
     log_info "Usage:"
     log_step "• claude - Start Claude Code assistant"
     log_step "• codex - Start OpenAI Codex assistant"
+    log_step "• opencode - Start the opencode agent"
+    log_step "• grok - Start the Grok Build agent"
     echo ""
     log_warning "Restart your terminal to load environment variables"
 
     wait_for_completion
     log_success "Step 9 complete!"
+}
+
+# =============================================================================
+# Step 10: Optional Mac App Store apps
+# =============================================================================
+
+setup_app_store_apps() {
+    log_step_header "10" "Optional App Store Apps"
+
+    log_info "These are optional and are NOT installed by 'rebuild'."
+    log_info "'mas install' needs the app to already be in your Apple ID purchase"
+    log_info "history, so the Brewfile just points you at the product page instead."
+    echo ""
+
+    if is_amphetamine_installed; then
+        log_success "Amphetamine is already installed"
+    else
+        log_info "Amphetamine - keep-awake utility (free, App Store exclusive)."
+        if confirm_step "Open the Amphetamine App Store page?"; then
+            open "https://apps.apple.com/app/id937984704" 2>/dev/null || \
+                log_warning "Could not open the App Store. Visit: https://apps.apple.com/app/id937984704"
+            log_step "Click 'Get' in the App Store, then come back here."
+            wait_for_completion
+        else
+            log_info "Skipped Amphetamine - entirely optional."
+        fi
+    fi
+
+    log_success "Step 10 complete!"
 }
 
 # =============================================================================
@@ -688,7 +745,7 @@ show_completion() {
     log_step "• Docker: Container platform (docker ps)"
     log_step "• Linear: Project management"
     log_step "• Slack: Team communication"
-    log_step "• AI Assistants: claude, codex commands"
+    log_step "• AI Assistants: claude, codex, opencode, grok commands"
     echo ""
 
     log_info "Useful commands:"
@@ -720,7 +777,8 @@ main() {
     log_step "6. Docker Desktop (containers)"
     log_step "7. Linear (project management)"
     log_step "8. Slack (team communication)"
-    log_step "9. AI Assistants (Claude Code & Codex)"
+    log_step "9. AI Assistants (Claude Code, Codex, opencode & grok)"
+    log_step "10. Optional App Store apps (Amphetamine)"
     echo ""
 
     log_warning "Note: Git and SSH keys were configured during setup.sh"
@@ -738,6 +796,9 @@ main() {
     is_linear_configured && ((configured_count++)) || true
     is_slack_configured && ((configured_count++)) || true
     is_ai_assistants_configured && ((configured_count++)) || true
+    # Step 10 (optional App Store apps) is deliberately excluded from the count:
+    # skipping Amphetamine is a valid end state, so counting it would mean the
+    # wizard could never report "all configured".
 
     if [[ $configured_count -eq 9 ]]; then
         log_success "All applications appear to be configured already!"
@@ -765,6 +826,7 @@ main() {
     setup_linear
     setup_slack
     setup_ai_assistants
+    setup_app_store_apps
 
     # Show completion message
     show_completion

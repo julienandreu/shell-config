@@ -11,7 +11,9 @@
 #   6. SSH key (ed25519) for GitHub
 #   7. GitHub CLI auth (optional, interactive)
 #   8. fnm install --lts (if no default node)
-#   9. Install claude-code (via official curl script) + codex (via npm)
+#   9. Install claude-code (via official curl script) + codex (via npm).
+#      opencode and grok are not here: they are Brewfile entries, so step 4
+#      already installed them.
 #   10. Optional onboarding wizard
 # =============================================================================
 
@@ -188,6 +190,18 @@ step_node_lts() {
 
 step_ai_assistants() {
     log_section "AI coding assistants"
+
+    # opencode and grok ship as Homebrew entries, so step_rebuild already
+    # installed them. Only the two that need a bespoke installer are prompted
+    # for here.
+    local tool
+    for tool in opencode grok; do
+        if command -v "$tool" >/dev/null 2>&1; then
+            log_success "$tool already installed: $(command -v "$tool")"
+        else
+            log_warning "$tool missing - expected from the Brewfile. Re-run bin/rebuild.sh."
+        fi
+    done
 
     if command -v claude >/dev/null 2>&1; then
         log_success "Claude Code already installed: $(command -v claude)"
